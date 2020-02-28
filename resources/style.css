@@ -1,0 +1,216 @@
+/* ABC fonts */
+@font-face {
+  font-family: "ABCSans Regular";
+  font-style: normal;
+  font-weight: normal;
+  src: local("ABCSans Regular"), url("./fonts/abcsans-regular.woff") format("woff");
+}
+@font-face {
+  font-family: "ABCSans Black";
+  font-style: normal;
+  font-weight: normal;
+  src: local("ABCSans Black"), url("./fonts/abcsans-black.woff") format("woff");
+}
+:root {
+  font-size: 1em;
+  font-family: "ABCSans Regular", "Arial Regular", sans-serif;
+}
+body {
+  margin: 0px;
+  padding: 0x;
+  opacity: 0;
+}
+h1, p {
+  margin: 0;
+  padding: 0;
+}
+#chart {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+#siteSelector {
+  position: absolute;
+  display: flex;
+  top: 10px;
+  right: 10px;
+}
+#periodSelector {
+  position: absolute;
+  display: flex;
+  bottom: 10px;
+  right: 10px;
+}
+#siteSelector .option {
+  font-family: "ABCSans Black", sans-serif;
+  color: white;
+  padding: 5px;
+  width: 65px;
+  text-align: center;
+  margin-right: 2px;
+  background-color: silver;
+}
+#periodSelector .option {
+  font-family: "ABCSans Black", sans-serif;
+  color: white;
+  background-color: #1C1C1C;
+  padding: 5px;
+  width: 65px;
+  text-align: center;
+  margin-right: 2px;
+}
+#periodSelector .option:last-child, #siteSelector .option:last-child {
+  margin-right: 0px;
+}
+#periodSelector .option.selected {
+  background-color: #009CBF;
+}
+#axisGroup text {
+  fill: #1C1C1C;
+  font-size: .7rem;
+}
+#axisLabel {
+  text-anchor: middle;
+  font-family: "ABCSans Black", sans-serif;
+}
+#axisGroup line, #axisGroup .domain  {
+  stroke: #1C1C1C;
+  opacity: .75;
+}
+#hazardGroup {
+  clip-path: url(#chartClip);
+}
+.site {
+  fill: none;
+  stroke-width: 2;
+  stroke: silver;
+  opacity: .5;
+  clip-path: url(#chartClip);
+}
+.site.selected {
+  stroke-width: 3;
+  opacity: 1;
+  stroke-dasharray: none;
+}
+#Florey.selected, .Florey {
+  stroke: #00A388;
+}
+#siteSelector .option[value=Florey].selected, #siteSelector .option[value=Florey].all {
+  background-color: #00A388;
+}
+#Monash.selected, .Monash {
+  stroke: #F75F00;
+}
+#siteSelector .option[value=Monash].selected, #siteSelector .option[value=Monash].all {
+  background-color: #F75F00;
+}
+#Civic.selected, .Civic {
+  stroke: #009CBF;
+}
+#siteSelector .option[value=Civic].selected, #siteSelector .option[value=Civic].all {
+  background-color: #009CBF;
+}
+.hazard {
+  opacity: .75;
+}
+.hazard line {
+  stroke: #1C1C1C;
+  stroke-dasharray: 4 3;
+}
+.hazard text {
+  fill: #1C1C1C;
+  text-anchor: end;
+  font-size: .8rem;
+}
+.cell path {
+  fill: rgba(0, 0, 0, 0);
+}
+.cell circle {
+  pointer-events: none;
+  fill: white;
+  stroke-width: 3;
+  display: none;
+}
+.cell circle.selected {
+   display: block;
+}
+#tip {
+  position: absolute;
+  font-size: .8rem;
+  opacity: 0;
+  text-align: center;
+  padding: 5px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, .85);
+  pointer-events: none;
+}
+#tip h1 {
+  font-family: "ABCSans Black", sans-serif;
+  font-size: 1rem;
+}
+#tip.Florey {
+  color: #00826A;
+}
+#tip.Monash {
+  color: #F75F00;
+}
+#tip.Civic {
+  color: #009CBF;
+}
+#info {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  color: #1C1C1C;
+  font-size: 1.5rem;
+  padding: 5px 10px 0 0;
+  display: none;
+}
+#info.selected {
+  display: block;
+}
+#infoPanel {
+  position: fixed;
+  margin: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px #1C1C1C;
+  background-color: #1C1C1C;
+  bottom: 0;
+  color: white;
+  display: none;
+  max-width: 100%;
+}
+#infoPanel.selected {
+  display: block;
+}
+#infoPanel a {
+  text-decoration: none;
+  color: #01CFFF;
+}
+#infoPanel p {
+  margin-top: .5rem;
+}
+#infoPanel p:first-child {
+  margin-top: 0;
+}
+/* desktop-only styling */
+@media only screen and (min-width: 500px) {
+  body {
+    background-color: #f9f9f9;
+  }
+  #info:hover::after {
+    font-size: 1rem;
+    content: " click for details";
+  }
+  #infoPanel a:hover {
+    color: #FF6100;
+  }
+  #infoPanel {
+    max-width: 50%;
+  }
+}
