@@ -19,7 +19,7 @@
     <!-- initial scripts -->
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-    <link href="./resources/style.css" rel="stylesheet">
+    <link href="./resources/style.css?1.1" rel="stylesheet">
     <link href="./resources/abcLogo64.png" rel="icon">
     <!-- page data for scrapers -->
     <meta property="og:title" content="Canberra's smoky summer">
@@ -43,8 +43,10 @@
           <rect></rect>
         </clipPath>
       </defs>
-      <g id="chartGroup"></g>
-      <g id="hazards"></g>
+      <g id="chartGroup">
+        <g id="smokeGroup"></g>
+        <g id="hazards"></g>
+      </g>
       <g id="axisGroup">
         <g id="xAxisGroup" class="axis"></g>
         <g id="yAxisGroup" class="axis">
@@ -66,6 +68,7 @@
         margin = { top: 90, right: 30, bottom: 30, left: 45 };
         chart = d3.select("#chart");
         chartGroup = d3.select("#chartGroup");
+        smokeGroup = d3.select("#smokeGroup");
         hazards = d3.select("#hazards");
         thresholds = hazards
           .selectAll(".threshold")
@@ -108,19 +111,14 @@
           .x(function(d) { return x(d.datetime); })
           .y1(function(d) { return y(d.aqi[1]); })
           .y0(function(d) { return y(d.aqi[0]); });
-        smoke = chartGroup
+        smoke = smokeGroup
           .append("path")
             .attr("id", "smoke");
         // resize and scaling
         window.addEventListener("resize", resize);
         resize();
         // commence animation
-        increment = 25;
-        range = 24 * 14;
-        d3.timeout(function() {
-          smokeLength = range;
-          draw();
-        }, 1500);
+        draw(1500, 24 * 14, 24 * 14, "begin");
         d3.select("body")
           .transition()
             .duration(1500)
@@ -139,34 +137,57 @@
         chartClip.select("rect")
           .attr("width", chartWidth - margin.left - margin.right)
           .attr("height", chartHeight - margin.top - margin.bottom);
-        thresholds.select("line")
-          .attr("x2", chartWidth - margin.left - margin.right);
+        thresholds.attr("transform", function(d) { return "translate(" + margin.left + ", " + margin.top + ")"; })
+          .select("line")
+            .attr("x2", chartWidth - margin.left - margin.right);
       }
-      function draw() {
+      function draw(increment, smokeLength, range, phase) {
+        t = d3.transition()
+          .duration(increment)
+          .ease(d3.easeLinear);
         x.domain(d3.extent(airData.slice(smokeLength - range, smokeLength), function(d) { return d.datetime; }));
         y.domain([d3.min(airData.slice(smokeLength - range, smokeLength), function(d) { return d.aqi[0]; }), d3.max(airData.slice(smokeLength - range, smokeLength), function(d) { return d.aqi[1]; })]);
-        xAxisGroup.transition()
-          .duration(increment)
-          .ease(d3.easeLinear)
+        xAxisGroup.transition(t)
           .call(xAxis);
-        yAxisGroup.transition()
-          .duration(increment)
-          .ease(d3.easeLinear)
+        yAxisGroup.transition(t)
           .call(yAxis);
-        smoke.transition()
-          .duration(increment)
-          .ease(d3.easeLinear)
+        smoke.transition(t)
           .attr("d", area(airData));
-        thresholds.transition()
-          .duration(increment)
-          .ease(d3.easeLinear)
+        thresholds.transition(t)
           .attr("transform", function(d) { return "translate(" + margin.left + ", " + y(d[1]) + ")"; });
-        if (smokeLength <= airData.length) {
+        d3.selectAll("#healthy text, #healthy line").transition(t)
+          .style("opacity", function() { if (y(26) - y(180) > 22) { return 1; } else { return 0; } });
+        if (phase == "begin") {
+          axisLabel.transition(t)
+            .style("opacity", 1);
+          chartGroup.transition(t)
+            .style("opacity", 1);
           d3.timeout(function() {
-            smokeLength++;
-            draw();
-          }, increment);
+            draw(25, 24 * 14, 24 * 14, "loop");
+          }, 3000);
         }
+        if (phase == "stretch") {
+          d3.timeout(function() {
+            draw(25, 24 * 14, 24 * 14, "loop");
+          }, 4500);
+        }
+        if (phase == "loop") {
+          if (smokeLength <= airData.length) {
+            d3.timeout(function() {
+              smokeLength++;
+              draw(increment, smokeLength, range, "loop");
+            }, increment);
+          } else {
+            d3.timeout(function() {
+              draw(1500, airData.length, airData.length, "stretch");
+            }, 1500);
+          }
+        }
+      }
+      function begin() {
+        d3.timeout(function() {
+          draw(true, );
+        }, 3000);
       }
     </script>
   </body>

@@ -50,6 +50,7 @@ p {
 #axisLabel {
   font-weight: bold;
   text-anchor: middle;
+  opacity: 0;
 }
 .axis text {
   fill: #1C1C1C;
@@ -64,9 +65,8 @@ p {
 }
 #smoke {
   fill: #01CFFF;
-  clip-path: url(#chartClip);
 }
-#hazards {
+#chartGroup {
   clip-path: url(#chartClip);
 }
 #hazardous line {
