@@ -118,7 +118,7 @@
         window.addEventListener("resize", resize);
         resize();
         // commence animation
-        draw(1500, 24 * 14, 24 * 14, "begin");
+        draw(1500, 24 * 21, 24 * 21, "begin");
         d3.select("body")
           .transition()
             .duration(1500)
@@ -168,17 +168,17 @@
           chartGroup.transition(t)
             .style("opacity", 1);
           d3.timeout(function() {
-            draw(20, 24 * 14, 24 * 14, "loop");
+            draw(15, 24 * 21, 24 * 21, "loop");
           }, increment * 2);
         }
         if (phase == "stretch") {
           d3.timeout(function() {
-            draw(1500, 24 * 14, 24 * 14, "reset");
+            draw(1500, 24 * 21, 24 * 21, "reset");
           }, increment * 1.5);
         }
         if (phase == "reset") {
           d3.timeout(function() {
-            draw(20, 24 * 14, 24 * 14, "loop");
+            draw(15, 24 * 21, 24 * 21, "loop");
           }, increment * 2);
         }
         if (phase == "loop") {
