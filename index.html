@@ -7,7 +7,6 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'UA-155991615-1');
     </script>
     <!-- my stuff -->
@@ -34,19 +33,141 @@
   </head>
   <body>
     <!-- initial page layout -->
-    <div id="container">
+    <div id="header">
+      <h1>Smoky summer</h1>
+      <p>range of pollution across Canberra</p>
+    </div>
+    <svg id="chart">
+      <defs>
+        <clipPath id="chartClip"> <!-- hide lines outside chart -->
+          <rect></rect>
+        </clipPath>
+      </defs>
+      <g id="chartGroup"></g>
+      <g id="hazards"></g>
+      <g id="axisGroup">
+        <g id="xAxisGroup" class="axis"></g>
+        <g id="yAxisGroup" class="axis">
+          <text id="axisLabel">AQI for PM2.5</text>
+        </g>
+      </g>
+    </svg>
     <script>
-      d3.xml("./resources/abcLogo.svg")
-          .mimeType("image/svg+xml")
-          .get(function(error, xml) {
-            if (error) throw error;
-            document.getElementById("container")
-              .appendChild(xml.documentElement);
-          });
-      d3.select("body")
-        .transition()
-          .duration(1500)
-          .style("opacity", 1)
+      d3.csv("./resources/data.csv", function(error, data) {
+        if (error) throw error;
+        airData = data;
+        airData.forEach(function(d) {
+          d.aqi = d.aqi.split(",");
+          d.aqi[0] = +d.aqi[0].slice(1);
+          d.aqi[1] = +d.aqi[1].slice(1, -1);
+          d.datetime = d3.timeParse("%s")(d.datetime);
+        });
+        //  page elements
+        margin = { top: 90, right: 30, bottom: 30, left: 45 };
+        chart = d3.select("#chart");
+        chartGroup = d3.select("#chartGroup");
+        hazards = d3.select("#hazards");
+        thresholds = hazards
+          .selectAll(".threshold")
+            .data([["hazardous", 180], ["healthy", 26]])
+          .enter().append("g")
+            .classed("threshold", true)
+            .attr("id", function(d) { return d[0]; });
+        thresholds.append("text")
+          .text(function(d) { return d[0] + " level"; })
+          .attr("x", 5)
+          .attr("y", -5);
+        thresholds.append("line")
+          .attr("x1", 0)
+          .attr("y1", 0)
+          .attr("y2", 0);
+        xAxisGroup = d3.select("#xAxisGroup");
+        yAxisGroup = d3.select("#yAxisGroup")
+          .attr("transform", "translate(" + margin.left + ", 0)");
+        axisLabel = d3.select("#axisLabel")
+          .attr("y", margin.top - 15)
+          .style("font-size", ".8rem");
+        chartClip = d3.select("#chartClip")
+        chartClip.select("rect")
+          .attr("x", margin.left)
+          .attr("y", margin.top);
+        // axes and scales
+        x = d3.scaleTime();
+        y = d3.scaleLinear();
+        xAxis = d3.axisBottom(x)
+          .tickSize(0)
+          .tickSizeOuter(0)
+          .tickPadding(10)
+          .ticks(4, "%b %-d");
+        yAxis = d3.axisLeft(y)
+          .tickSizeOuter(0)
+          .tickPadding(10)
+          .ticks(5);;
+        // smoke range
+        area = d3.area()
+          .x(function(d) { return x(d.datetime); })
+          .y1(function(d) { return y(d.aqi[1]); })
+          .y0(function(d) { return y(d.aqi[0]); });
+        smoke = chartGroup
+          .append("path")
+            .attr("id", "smoke");
+        // resize and scaling
+        window.addEventListener("resize", resize);
+        resize();
+        // commence animation
+        increment = 25;
+        range = 24 * 14;
+        d3.timeout(function() {
+          smokeLength = range;
+          draw();
+        }, 1500);
+        d3.select("body")
+          .transition()
+            .duration(1500)
+            .style("opacity", 1);
+      });
+      function resize() {
+        let dimensions = document
+          .getElementById("chart")
+          .getBoundingClientRect();
+        chartWidth = dimensions.width;
+        chartHeight = dimensions.height;
+        xAxisGroup.attr("transform", "translate(0, " + (chartHeight - margin.bottom) + ")");
+        x.range([margin.left, chartWidth - margin.right]);
+        y.range([chartHeight - margin.bottom, margin.top]);
+        yAxis.tickSizeInner(margin.left + margin.right - chartWidth);
+        chartClip.select("rect")
+          .attr("width", chartWidth - margin.left - margin.right)
+          .attr("height", chartHeight - margin.top - margin.bottom);
+        thresholds.select("line")
+          .attr("x2", chartWidth - margin.left - margin.right);
+      }
+      function draw() {
+        x.domain(d3.extent(airData.slice(smokeLength - range, smokeLength), function(d) { return d.datetime; }));
+        y.domain([d3.min(airData.slice(smokeLength - range, smokeLength), function(d) { return d.aqi[0]; }), d3.max(airData.slice(smokeLength - range, smokeLength), function(d) { return d.aqi[1]; })]);
+        xAxisGroup.transition()
+          .duration(increment)
+          .ease(d3.easeLinear)
+          .call(xAxis);
+        yAxisGroup.transition()
+          .duration(increment)
+          .ease(d3.easeLinear)
+          .call(yAxis);
+        smoke.transition()
+          .duration(increment)
+          .ease(d3.easeLinear)
+          .attr("d", area(airData));
+        thresholds.transition()
+          .duration(increment)
+          .ease(d3.easeLinear)
+          .attr("transform", function(d) { return "translate(" + margin.left + ", " + y(d[1]) + ")"; });
+        if (smokeLength <= airData.length) {
+          d3.timeout(function() {
+            smokeLength++;
+            draw();
+          }, increment);
+        }
+      }
     </script>
   </body>
 </html>
