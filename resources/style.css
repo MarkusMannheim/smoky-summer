@@ -19,6 +19,7 @@ body {
   margin: 0px;
   padding: 0x;
   opacity: 0;
+  overflow: hidden;
 }
 h1, p {
   margin: 0;
