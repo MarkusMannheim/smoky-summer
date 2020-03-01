@@ -19,12 +19,12 @@
     <!-- initial scripts -->
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-    <link href="./resources/style.css?1.1" rel="stylesheet">
+    <link href="./resources/style.css?1.2" rel="stylesheet">
     <link href="./resources/abcLogo64.png" rel="icon">
     <!-- page data for scrapers -->
     <meta property="og:title" content="Canberra's smoky summer">
     <meta property="og:description" content="Bushfire smoke made Canberra the most polluted city in the world in the summer of 2019-20.">
-    <meta property="og:image" content="https://markusmannheim.github.io/canberra-air-quality/resources/parlySmoke.jpg">
+    <meta property="og:image" content="https://markusmannheim.github.io/canberra-air-quality/resources/smokySummer.jpg">
     <meta property="og:url" content="https://markusmannheim.github.io/smoky-summer/">
     <meta property="og:type" content="website">
     <meta property="twitter:card" content="summary_large_image">
@@ -142,9 +142,14 @@
             .attr("x2", chartWidth - margin.left - margin.right);
       }
       function draw(increment, smokeLength, range, phase) {
-        t = d3.transition()
-          .duration(increment)
-          .ease(d3.easeLinear);
+        if (phase == "loop") {
+          t = d3.transition()
+            .duration(increment)
+            .ease(d3.easeLinear);
+        } else {
+          t = d3.transition()
+            .duration(increment);
+        }
         x.domain(d3.extent(airData.slice(smokeLength - range, smokeLength), function(d) { return d.datetime; }));
         y.domain([d3.min(airData.slice(smokeLength - range, smokeLength), function(d) { return d.aqi[0]; }), d3.max(airData.slice(smokeLength - range, smokeLength), function(d) { return d.aqi[1]; })]);
         xAxisGroup.transition(t)
@@ -163,13 +168,18 @@
           chartGroup.transition(t)
             .style("opacity", 1);
           d3.timeout(function() {
-            draw(25, 24 * 14, 24 * 14, "loop");
-          }, 3000);
+            draw(20, 24 * 14, 24 * 14, "loop");
+          }, increment * 2);
         }
         if (phase == "stretch") {
           d3.timeout(function() {
-            draw(25, 24 * 14, 24 * 14, "loop");
-          }, 4500);
+            draw(1500, 24 * 14, 24 * 14, "reset");
+          }, increment * 1.5);
+        }
+        if (phase == "reset") {
+          d3.timeout(function() {
+            draw(20, 24 * 14, 24 * 14, "loop");
+          }, increment * 2);
         }
         if (phase == "loop") {
           if (smokeLength <= airData.length) {
@@ -179,15 +189,10 @@
             }, increment);
           } else {
             d3.timeout(function() {
-              draw(1500, airData.length, airData.length, "stretch");
+              draw(3000, airData.length, airData.length, "stretch");
             }, 1500);
           }
         }
-      }
-      function begin() {
-        d3.timeout(function() {
-          draw(true, );
-        }, 3000);
       }
     </script>
   </body>
